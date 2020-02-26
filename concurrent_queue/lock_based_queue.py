@@ -3,8 +3,8 @@ from multiprocessing import Lock,Array
 class lock_based_queue():
     
     def __init__(self, capacity):
-        self.head = 0
-        self.tail = 0
+        self.head = Array("i",1)
+        self.tail = Array("i",1)
         self.items = Array("i",capacity)
         self.lock = Lock()
         
@@ -15,15 +15,15 @@ class lock_based_queue():
                 return c
             else:
                 c += 1
-                
         
     def enq(self, x):
         self.lock.acquire()
         try:
-            if (self.tail - self.head) == len(self.items):
+            if (self.tail[0] - self.head[0]) == len(self.items):
                 raise Exception("FullException")
-            self.items[self.tail % len(self.items)] = x
-            self.tail += 1
+            self.items[self.tail[0] % len(self.items)] = x
+            self.tail[0] += 1
+            print("Tail: " + str(self.tail[0]))
         except Exception as err:
             raise err
         finally:
@@ -32,11 +32,12 @@ class lock_based_queue():
     def deq(self):
         self.lock.acquire()
         try:
-            if self.tail == self.head:
+            if self.tail[0] == self.head[0]:
                 raise Exception("EmptyException")
-            x = self.items[self.head % len(self.items)]
+            x = self.items[self.head[0] % len(self.items)]
             self.items[self.index(x)] = 0
-            self.head += 1
+            self.head[0] += 1
+            print("Head: " + str(self.head[0]))
             return x
         except Exception as err:
             raise err
